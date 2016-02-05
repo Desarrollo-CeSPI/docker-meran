@@ -11,26 +11,29 @@ DB_HOST=mysql
 DB_NAME=meran
 MERAN_PATH=/usr/local/share/meran
 MAIN_CONFIG=$CONFIG_DIR/meran$ID.conf
-TPL_MAIN_CONFIG=$MERAN_PATH/docs/instalador/meran.conf
-TPL_INIT_SCRIPT=$MERAN_PATH/docs/instalador/iniciando.pl
+TPL_MAIN_CONFIG=$MERAN_PATH/$ID/docs/instalador/meran.conf
+TPL_INIT_SCRIPT=$MERAN_PATH/$ID/docs/instalador/iniciando.pl
 INIT_SCRIPT=$CONFIG_DIR/iniciando$ID.pl
-TPL_APACHE_CONF_OPAC=$MERAN_PATH/docs/instalador/debian6/apache-jaula-opac
-TPL_APACHE_CONF_SSL=$MERAN_PATH/docs/instalador/debian6/apache-jaula-ssl
-APACHE_CONF_OPAC=/etc/apache2/sites_enabled/opac.conf
-APACHE_CONF_SSL=/etc/apache2/sites_enabled/ssl.conf
+TPL_APACHE_CONF_OPAC=$MERAN_PATH/$ID/docs/instalador/debian6/apache-jaula-opac
+TPL_APACHE_CONF_SSL=$MERAN_PATH/$ID/docs/instalador/debian6/apache-jaula-ssl
+APACHE_CONF_OPAC=/etc/apache2/sites-enabled/opac.conf
+APACHE_CONF_SSL=/etc/apache2/sites-enabled/ssl.conf
 SPHINX_CONFIG_DIR=$MERAN_PATH/$ID/sphinx/etc
+SPHINX_BIN=$MERAN_PATH/$ID/sphinx/bin
 SPHINX_CONFIG=$SPHINX_CONFIG_DIR/sphinx.conf
-TPL_SPHINX_CONFIG=$MERAN_PATH/docs/instalador/sphinx.conf
+TPL_SPHINX_CONFIG=$MERAN_PATH/$ID/docs/instalador/sphinx.conf
 
 [ -d $MERAN_PATH ] || ( echo "El directorio $MERAN_PATH debe existir"; exit 1 )
 
 [ -d $MERAN_PATH/$ID ] || mkdir $MERAN_PATH/$ID
 
-[ -L $CONFIG_DIR ] || ln -s $CONFIG_DIR /meran/config
-[ -L $/var/logs/meran ] || ln -s /var/logs/meran /meran/logs
-[ -L $MERAN_PATH/$ID/files ] || ln -s $MERAN_PATH/$ID/files /meran/files
-[ -d /etc/apache2/sites_enabled ] && rm -fr /etc/apache2/sites_enabled
-[ -L /etc/apache2/sites_enabled ] || ln -s /etc/apache2/sites_enabled/ /meran/apache
+[ -L $CONFIG_DIR ] || ln -s /meran/config $CONFIG_DIR
+[ -L /var/log/meran ] || ln -s /meran/logs /var/log/meran
+# Ya existe un directorio files en el repo 
+[ -d $MERAN_PATH/$ID/files ] && rm -rf  $MERAN_PATH/$ID/files
+[ -L $MERAN_PATH/$ID/files ] || ln -s /meran/files $MERAN_PATH/$ID/files
+[ -d /etc/apache2/sites-enabled ] && rm -fr /etc/apache2/sites-enabled
+[ -L /etc/apache2/sites-enabled ] || ln -s /meran/apache/ /etc/apache2/sites-enabled
 
 if [ ! -f $MAIN_CONFIG ]; then
   # Configuracion principal de meran
@@ -49,7 +52,7 @@ if [ ! -f $INIT_SCRIPT ]; then
   [ -f $TPL_INIT_SCRIPT ] || ( echo "El archivo $TPL_INIT_SCRIPT debe existir"; exit 1 )
   sed s@reemplazarID@$ID@g $TPL_INIT_SCRIPT > $INIT_SCRIPT
   sed -i s@reemplazarCONFMERAN@$CONFIG_DIR@g $INIT_SCRIPT
-  sed s@reemplazarPATHBASE@$MERAN_PATH@g $INIT_SCRIPT
+  sed -i s@reemplazarPATHBASE@$MERAN_PATH@g $INIT_SCRIPT
 fi
 
 if [ ! -f $SPHINX_CONFIG ]; then
@@ -62,16 +65,36 @@ if [ ! -f $SPHINX_CONFIG ]; then
 fi
 
 if [ ! -f $APACHE_CONF_SSL ]; then
-  cp $TPL_APACHE_CONF_SSL $APACHE_CONF_SSL
+  # Configuracion Apache Intranet
+  [ -f $TPL_APACHE_CONF_SSL ] || ( echo "El archivo $TPL_APACHE_CONF_SSL debe existir"; exit 1 )
+  sed s@reemplazarID@$ID@g $TPL_APACHE_CONF_SSL > $APACHE_CONF_SSL
+  sed -i s@reemplazarCONFMERAN@$CONFIG_DIR@g $APACHE_CONF_SSL
+  sed -i s@reemplazarPATHBASE@$MERAN_PATH@g $APACHE_CONF_SSL
 fi
 
 if [ ! -f $APACHE_CONF_OPAC ]; then
-  cp $TPL_APACHE_CONF_OPAC $APACHE_CONF_OPAC
+  # Configuracion Apache Opac
+  [ -f $TPL_APACHE_CONF_OPAC ] || ( echo "El archivo $TPL_APACHE_CONF_OPAC debe existir"; exit 1 )
+  sed s@reemplazarID@$ID@g $TPL_APACHE_CONF_OPAC > $APACHE_CONF_OPAC
+  sed -i s@reemplazarCONFMERAN@$CONFIG_DIR@g $APACHE_CONF_OPAC
+  sed -i s@reemplazarPATHBASE@$MERAN_PATH@g $APACHE_CONF_OPAC
+fi
+
+if [ ! -f /etc/apache2/ssl/$ID/apache.pem ]; then
+  # Generando el certificado de apache
+  mkdir -p /etc/apache2/ssl/$ID
+  openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout /etc/apache2/ssl/$ID/apache.pem -out /etc/apache2/ssl/$ID/apache.pem
+  a2enmod rewrite
+  a2enmod expires
+  a2enmod ssl
+  a2enmod headers
 fi
 
 chown www-data:www-data -R /meran
 chown www-data:www-data -R $MERAN_PATH
-$SPHINX_BIN/indexer -c $SPHINX_CONFIG --all --rotate
+#$SPHINX_BIN/indexer -c $SPHINX_CONFIG --all --rotate
+
+/usr/sbin/apache2ctl -D FOREGROUND
 
 #CONSIDERAR los crons en la maquina host así como la rotacion de logs en el volumen
 #INDICAR EN EL README COMO SE INSTALA A PARTIR DE UNA DB pre-existente con los datos necesarios
