@@ -22,6 +22,8 @@ SPHINX_CONFIG_DIR=$MERAN_PATH/$ID/sphinx/etc
 SPHINX_BIN=$MERAN_PATH/$ID/sphinx/bin
 SPHINX_CONFIG=$SPHINX_CONFIG_DIR/sphinx.conf
 TPL_SPHINX_CONFIG=$MERAN_PATH/$ID/docs/instalador/sphinx.conf
+MODULOS_JAULA=$MERAN_PATH/$ID/intranet/modules/C4
+PERL_LIB_JAULA=$MODULOS_JAULA/Share/share/perl/5.10.1/:$MODULOS_JAULA/Share/lib/perl/5.10.1/:$MODULOS_JAULA/Share/share/perl/5.10/:$MODULOS_JAULA/C4/Share/share/perl/5.10.1/:$MODULOS_JAULA/Share/lib/perl/5.10/:$MODULOS_JAULA/Share/lib/perl5/
 
 [ -d $MERAN_PATH ] || ( echo "El directorio $MERAN_PATH debe existir"; exit 1 )
 
@@ -32,8 +34,10 @@ TPL_SPHINX_CONFIG=$MERAN_PATH/$ID/docs/instalador/sphinx.conf
 [ -d /var/log/meran/$ID ] || mkdir /var/log/meran/$ID
 
 # Ya existe un directorio files en el repo 
-[ -d $MERAN_PATH/$ID/files ] && rm -rf  $MERAN_PATH/$ID/files
+[ -d $MERAN_PATH/$ID/files ] && mv $MERAN_PATH/$ID/files $MERAN_PATH/$ID/filestemp
 [ -L $MERAN_PATH/$ID/files ] || ln -s /meran/files $MERAN_PATH/$ID/files
+[ -d $MERAN_PATH/$ID/filestemp ] && cp -a $MERAN_PATH/$ID/filestemp/* $MERAN_PATH/$ID/files/ && rm -rf $MERAN_PATH/$ID/filestemp/
+
 [ -d /etc/apache2/sites-enabled ] && rm -fr /etc/apache2/sites-enabled
 [ -L /etc/apache2/sites-enabled ] || ln -s /meran/apache/ /etc/apache2/sites-enabled
 
@@ -114,7 +118,18 @@ if [ ! -f /var/log/meran/$ID/index-rooted-meran.spd ]; then
   $SPHINX_BIN/indexer -c $SPHINX_CONFIG --all --rotate
 fi
 
+#CONSIDERAR los crons en la maquina host así como la rotacion de logs en el volumen
+if [ ! -d /cron ]; then
+  mkdir /cron
+  printf "#!/bin/bash\n export PERL5LIB=$PERL_LIB_JAULA; export MERAN_CONF=$MAIN_CONFIG; cd $MERAN_PATH/$ID/intranet/modules/ ; perl ../cgi-bin/cron/reindexar.pl" > /cron/reindexar
+  printf "#!/bin/bash\n export PERL5LIB=$PERL_LIB_JAULA; export MERAN_CONF=$MAIN_CONFIG; cd $MERAN_PATH/$ID/intranet/modules/ ; perl ../cgi-bin/cron/obtener_portadas_de_registros.pl" > /cron/portadas
+  printf "#!/bin/bash\n export PERL5LIB=$PERL_LIB_JAULA; export MERAN_CONF=$MAIN_CONFIG; cd $MERAN_PATH/$ID/intranet/modules/ ; perl ../cgi-bin/cron/generar_indice.pl" > /cron/generar_indice
+  printf "#!/bin/bash\n export PERL5LIB=$PERL_LIB_JAULA; export MERAN_CONF=$MAIN_CONFIG; cd $MERAN_PATH/$ID/intranet/modules/ ; perl ../cgi-bin/cron/recordatorio_prestamos_vto.pl" > /cron/mail_recordatorio_prestamos
+  printf "#!/bin/bash\n export PERL5LIB=$PERL_LIB_JAULA; export MERAN_CONF=$MAIN_CONFIG; cd $MERAN_PATH/$ID/intranet/modules/ ; perl ../cgi-bin/cron/mail_prestamos_vencidos.pl" > /cron/mail_prestamos_vencidos
+  chown www-data:www-data -R /cron/
+  chmod +x /cron/*
+fi
+
 /usr/sbin/apache2ctl -D FOREGROUND
 
-#CONSIDERAR los crons en la maquina host así como la rotacion de logs en el volumen
 #INDICAR EN EL README COMO SE INSTALA A PARTIR DE UNA DB pre-existente con los datos necesarios
