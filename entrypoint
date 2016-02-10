@@ -29,6 +29,8 @@ TPL_SPHINX_CONFIG=$MERAN_PATH/$ID/docs/instalador/sphinx.conf
 
 [ -L $CONFIG_DIR ] || ln -s /meran/config $CONFIG_DIR
 [ -L /var/log/meran ] || ln -s /meran/logs /var/log/meran
+[ -d /var/log/meran/$ID ] || mkdir /var/log/meran/$ID
+
 # Ya existe un directorio files en el repo 
 [ -d $MERAN_PATH/$ID/files ] && rm -rf  $MERAN_PATH/$ID/files
 [ -L $MERAN_PATH/$ID/files ] || ln -s /meran/files $MERAN_PATH/$ID/files
@@ -80,19 +82,37 @@ if [ ! -f $APACHE_CONF_OPAC ]; then
   sed -i s@reemplazarPATHBASE@$MERAN_PATH@g $APACHE_CONF_OPAC
 fi
 
+# Bug: Apache fails to start after reboot due to missing /var/run/apache2 directory when SSL is enabled 
+[ -d /var/run/apache2 ] || mkdir /var/run/apache2
+
+[ -L /etc/apache2/ssl ] || ln -s /meran/ssl/ /etc/apache2/ssl
+
 if [ ! -f /etc/apache2/ssl/$ID/apache.pem ]; then
   # Generando el certificado de apache
   mkdir -p /etc/apache2/ssl/$ID
   openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout /etc/apache2/ssl/$ID/apache.pem -out /etc/apache2/ssl/$ID/apache.pem
-  a2enmod rewrite
-  a2enmod expires
+fi
+
+if [ ! -L /etc/apache2/mods-enabled/ssl.load ]; then
   a2enmod ssl
+fi
+if [ ! -L /etc/apache2/mods-enabled/rewrite.load ]; then
+  a2enmod rewrite
+fi
+if [ ! -L /etc/apache2/mods-enabled/expires.load ]; then
+  a2enmod expires
+fi
+if [ ! -L /etc/apache2/mods-enabled/headers.load ]; then
   a2enmod headers
 fi
 
 chown www-data:www-data -R /meran
 chown www-data:www-data -R $MERAN_PATH
-#$SPHINX_BIN/indexer -c $SPHINX_CONFIG --all --rotate
+
+if [ ! -f /var/log/meran/$ID/index-rooted-meran.spd ]; then
+  # Generando el índice la primera vez si no existe
+  $SPHINX_BIN/indexer -c $SPHINX_CONFIG --all --rotate
+fi
 
 /usr/sbin/apache2ctl -D FOREGROUND
 
