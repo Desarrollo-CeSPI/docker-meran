@@ -11,6 +11,11 @@ DB_HOST=${DB_HOST:-mysql}
 DB_USER=${DB_USER:-meran}
 DB_PASS=${DB_PASS:-meranpass}
 
+MYSQL="mysql --default-character-set=utf8 -u $DB_USER -h $DB_HOST $DB_NAME"
+if [ ! -z "$DB_PASS" ]; then
+  MYSQL="$MYSQL -p$DB_PASS"
+fi
+
 MERAN_PATH=/usr/local/share/meran
 MAIN_CONFIG=$CONFIG_DIR/meran$ID.conf
 TPL_MAIN_CONFIG=$MERAN_PATH/$ID/docs/instalador/meran.conf
@@ -26,6 +31,11 @@ SPHINX_CONFIG=$SPHINX_CONFIG_DIR/sphinx.conf
 TPL_SPHINX_CONFIG=$MERAN_PATH/$ID/docs/instalador/sphinx.conf
 MODULOS_JAULA=$MERAN_PATH/$ID/intranet/modules/C4
 PERL_LIB_JAULA=$MODULOS_JAULA/Share/share/perl/5.10.1/:$MODULOS_JAULA/Share/lib/perl/5.10.1/:$MODULOS_JAULA/Share/share/perl/5.10/:$MODULOS_JAULA/C4/Share/share/perl/5.10.1/:$MODULOS_JAULA/Share/lib/perl/5.10/:$MODULOS_JAULA/Share/lib/perl5/
+
+TPL_BASE_DB=$MERAN_PATH/$ID/docs/instalador/base.sql
+TPL_PERMISOS_DB=$MERAN_PATH/$ID/docs/instalador/permisosbdd.sql
+PERMISOS_DB=/tmp/permisos_meran.sql
+BASE_DB=/tmp/demo_meran.sql
 
 [ -d $MERAN_PATH ] || ( echo "El directorio $MERAN_PATH debe existir"; exit 1 )
 
@@ -118,6 +128,28 @@ fi
 chown www-data:www-data -R /meran
 chown www-data:www-data -R $MERAN_PATH
 
+EXISTS=`mysql -u$DB_USER -p$DB_PASS --default-character-set=utf8 -h $DB_HOST -e "SHOW DATABASES" | grep -Fo $DB_NAME`
+
+TABLES=`echo "show tables; SELECT FOUND_ROWS();" | $MYSQL | tail -1`
+
+if [ "$EXISTS" != "$DB_NAME" -o "$TABLES" -eq 0 ]; then
+  #La base no tiene nada o ni existe, la destruyo y regenero
+  sed s@reemplazarDATABASE@$DB_NAME@g $TPL_PERMISOS_DB > $PERMISOS_DB
+  sed -i s@reemplazarUSER@$DB_USER@g $PERMISOS_DB 
+  sed -i s@reemplazarPASS@$DB_PASS@g $PERMISOS_DB
+  sed -i s@reemplazarHOST@$DB_HOST@g $PERMISOS_DB
+  sed -i s@reemplazarIUSER@$DB_USER@g $PERMISOS_DB
+  sed -i s@reemplazarIPASS@$DB_PASS@g $PERMISOS_DB
+  
+  echo "DROP DATABASE IF EXISTS $DB_NAME;" > $BASE_DB
+  head -n3 $PERMISOS_DB >> $BASE_DB
+  cat $TPL_BASE_DB >>  $BASE_DB
+  tail -n2 $PERMISOS_DB >> $BASE_DB
+
+  #Creamos la base con permisos
+  $MYSQL < $BASE_DB  
+fi
+
 if [ ! -f /var/log/meran/$ID/index-rooted-meran.spd ]; then
   # Generando el índice la primera vez si no existe
   $SPHINX_BIN/indexer -c $SPHINX_CONFIG --all --rotate
@@ -136,5 +168,3 @@ if [ ! -d /cron ]; then
 fi
 
 /usr/sbin/apache2ctl -D FOREGROUND
-
-#INDICAR EN EL README COMO SE INSTALA A PARTIR DE UNA DB pre-existente con los datos necesarios

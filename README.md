@@ -266,7 +266,7 @@ de la máquina local es con la opción `-p PTO_LOCAL:PTO_DESTINO`, por ejemplo `
 contenedor redireccionará al puerto 80 del contenedor, donde se encuentra
 ejecutando Meran.
 
-### Definir los volúmnes
+### Definir los volúmenes
 
 Pueden utilizarse volúmenes que maneja Docker o directorios de la PC donde se
 ejecuta Docker. Si se utiliza la opción:
