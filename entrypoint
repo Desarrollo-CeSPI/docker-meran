@@ -5,10 +5,12 @@ set -e
 # Copiar al volumen la configuracion
 CONFIG_DIR=/etc/meran
 ID=main
-DB_USER=meran
-DB_PASS=meranpass
-DB_HOST=mysql
-DB_NAME=meran
+
+[ -z "$DB_USER" ] && DB_USER=meran
+[ -z "$DB_PASS" ] && DB_PASS=meranpass
+[ -z "$DB_HOST" ] && DB_HOST=mysql
+[ -z "$DB_NAME" ] && DB_NAME=meran
+
 MERAN_PATH=/usr/local/share/meran
 MAIN_CONFIG=$CONFIG_DIR/meran$ID.conf
 TPL_MAIN_CONFIG=$MERAN_PATH/$ID/docs/instalador/meran.conf
@@ -51,6 +53,7 @@ if [ ! -f $MAIN_CONFIG ]; then
   sed -i s@reemplazarBDDHOST@$DB_HOST@g $MAIN_CONFIG
   sed -i s@reemplazarDATABASE@$DB_NAME@g $MAIN_CONFIG
   sed -i s@reemplazarPATHBASE@$MERAN_PATH@g  $MAIN_CONFIG
+  sed -i 's,^\(use_socket=\).*,\1'0',' $MAIN_CONFIG
 fi
 
 if [ ! -f $INIT_SCRIPT ]; then
@@ -97,16 +100,16 @@ if [ ! -f /etc/apache2/ssl/$ID/apache.pem ]; then
   openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout /etc/apache2/ssl/$ID/apache.pem -out /etc/apache2/ssl/$ID/apache.pem
 fi
 
-if [ ! -L /etc/apache2/mods-enabled/ssl.load ]; then
+if [ ! -e /etc/apache2/mods-enabled/ssl.load ]; then
   a2enmod ssl
 fi
-if [ ! -L /etc/apache2/mods-enabled/rewrite.load ]; then
+if [ ! -e /etc/apache2/mods-enabled/rewrite.load ]; then
   a2enmod rewrite
 fi
-if [ ! -L /etc/apache2/mods-enabled/expires.load ]; then
+if [ ! -e /etc/apache2/mods-enabled/expires.load ]; then
   a2enmod expires
 fi
-if [ ! -L /etc/apache2/mods-enabled/headers.load ]; then
+if [ ! -e /etc/apache2/mods-enabled/headers.load ]; then
   a2enmod headers
 fi
 
