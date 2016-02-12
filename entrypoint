@@ -6,10 +6,10 @@ set -e
 CONFIG_DIR=/etc/meran
 ID=main
 
-[ -z "$DB_USER" ] && DB_USER=meran
-[ -z "$DB_PASS" ] && DB_PASS=meranpass
-[ -z "$DB_HOST" ] && DB_HOST=mysql
-[ -z "$DB_NAME" ] && DB_NAME=meran
+DB_NAME=${DB_NAME:-meran}
+DB_HOST=${DB_HOST:-mysql}
+DB_USER=${DB_USER:-meran}
+DB_PASS=${DB_PASS:-meranpass}
 
 MERAN_PATH=/usr/local/share/meran
 MAIN_CONFIG=$CONFIG_DIR/meran$ID.conf
@@ -71,6 +71,8 @@ if [ ! -f $SPHINX_CONFIG ]; then
   sed -i s@reemplazarIPASS@$DB_PASS@g $SPHINX_CONFIG
   sed -i s@reemplazarBDDHOST@$DB_HOST@g $SPHINX_CONFIG
   sed -i s@reemplazarDATABASE@$DB_NAME@g $SPHINX_CONFIG
+  mv $SPHINX_CONFIG /meran/config/
+  ln -s /meran/config/sphinx.conf $SPHINX_CONFIG
 fi
 
 if [ ! -f $APACHE_CONF_SSL ]; then
