@@ -11,11 +11,6 @@ DB_HOST=${DB_HOST:-mysql}
 DB_USER=${DB_USER:-meran}
 DB_PASS=${DB_PASS:-meranpass}
 
-MYSQL="mysql --default-character-set=utf8 -u $DB_USER -h $DB_HOST $DB_NAME"
-if [ ! -z "$DB_PASS" ]; then
-  MYSQL="$MYSQL -p$DB_PASS"
-fi
-
 MERAN_PATH=/usr/local/share/meran
 MAIN_CONFIG=$CONFIG_DIR/meran$ID.conf
 TPL_MAIN_CONFIG=$MERAN_PATH/$ID/docs/instalador/meran.conf
@@ -33,9 +28,11 @@ MODULOS_JAULA=$MERAN_PATH/$ID/intranet/modules/C4
 PERL_LIB_JAULA=$MODULOS_JAULA/Share/share/perl/5.10.1/:$MODULOS_JAULA/Share/lib/perl/5.10.1/:$MODULOS_JAULA/Share/share/perl/5.10/:$MODULOS_JAULA/C4/Share/share/perl/5.10.1/:$MODULOS_JAULA/Share/lib/perl/5.10/:$MODULOS_JAULA/Share/lib/perl5/
 
 TPL_BASE_DB=$MERAN_PATH/$ID/docs/instalador/base.sql
+TPL_UPDATES_DB=$MERAN_PATH/$ID/docs/instalador/updates.sql
 TPL_PERMISOS_DB=$MERAN_PATH/$ID/docs/instalador/permisosbdd.sql
 PERMISOS_DB=/tmp/permisos_meran.sql
 BASE_DB=/tmp/demo_meran.sql
+UPDATES_DB=/tmp/updates_meran.sql
 
 [ -d $MERAN_PATH ] || ( echo "El directorio $MERAN_PATH debe existir"; exit 1 )
 
@@ -45,10 +42,11 @@ BASE_DB=/tmp/demo_meran.sql
 [ -L /var/log/meran ] || ln -s /meran/logs /var/log/meran
 [ -d /var/log/meran/$ID ] || mkdir /var/log/meran/$ID
 
-# Ya existe un directorio files en el repo 
-[ -d $MERAN_PATH/$ID/files ] && mv $MERAN_PATH/$ID/files $MERAN_PATH/$ID/filestemp
-[ -L $MERAN_PATH/$ID/files ] || ln -s /meran/files $MERAN_PATH/$ID/files
-[ -d $MERAN_PATH/$ID/filestemp ] && cp -a $MERAN_PATH/$ID/filestemp/* $MERAN_PATH/$ID/files/ && rm -rf $MERAN_PATH/$ID/filestemp/
+if [ ! -L $MERAN_PATH/$ID/files ]; then
+  # Ya existe un directorio files en el repo 
+  [ -d $MERAN_PATH/$ID/files ] && mv $MERAN_PATH/$ID/files/* /meran/files/ && rm -rf $MERAN_PATH/$ID/files/
+  [ -L $MERAN_PATH/$ID/files ] || ln -s /meran/files $MERAN_PATH/$ID/files
+fi
 
 [ -d /etc/apache2/sites-enabled ] && rm -fr /etc/apache2/sites-enabled
 [ -L /etc/apache2/sites-enabled ] || ln -s /meran/apache/ /etc/apache2/sites-enabled
@@ -112,28 +110,34 @@ if [ ! -f /etc/apache2/ssl/$ID/apache.pem ]; then
   openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout /etc/apache2/ssl/$ID/apache.pem -out /etc/apache2/ssl/$ID/apache.pem
 fi
 
-if [ ! -e /etc/apache2/mods-enabled/ssl.load ]; then
+if [ ! -L /etc/apache2/mods-enabled/ssl.load ]; then
   a2enmod ssl
 fi
-if [ ! -e /etc/apache2/mods-enabled/rewrite.load ]; then
+if [ ! -L /etc/apache2/mods-enabled/rewrite.load ]; then
   a2enmod rewrite
 fi
-if [ ! -e /etc/apache2/mods-enabled/expires.load ]; then
+if [ ! -L /etc/apache2/mods-enabled/expires.load ]; then
   a2enmod expires
 fi
-if [ ! -e /etc/apache2/mods-enabled/headers.load ]; then
+if [ ! -L /etc/apache2/mods-enabled/headers.load ]; then
   a2enmod headers
 fi
 
 chown www-data:www-data -R /meran
 chown www-data:www-data -R $MERAN_PATH
 
-EXISTS=`mysql -u$DB_USER -p$DB_PASS --default-character-set=utf8 -h $DB_HOST -e "SHOW DATABASES" | grep -Fo $DB_NAME`
+MYSQL="mysql -u$DB_USER -h$DB_HOST --default-character-set=utf8 --batch --skip-column-names"
+if [ ! -z "$DB_PASS" ]; then
+  MYSQL="$MYSQL -p$DB_PASS"
+fi
 
-TABLES=`echo "show tables; SELECT FOUND_ROWS();" | $MYSQL | tail -1`
+DBEXISTS=$($MYSQL -e "SHOW DATABASES LIKE '"$DB_NAME"';" | grep -q "$DB_NAME" ; echo "$?")
 
-if [ "$EXISTS" != "$DB_NAME" -o "$TABLES" -eq 0 ]; then
-  #La base no tiene nada o ni existe, la destruyo y regenero
+COUNT_TABLES=$($MYSQL $DB_NAME -e "SHOW TABLES; SELECT FOUND_ROWS();" | tail -1)
+
+if [ "$DBEXISTS" -ne 0  ] || [ "$DBEXISTS" -eq 0 -a "$COUNT_TABLES" -eq 0 ]; then
+  
+  #La base no existe o está vacía
   sed s@reemplazarDATABASE@$DB_NAME@g $TPL_PERMISOS_DB > $PERMISOS_DB
   sed -i s@reemplazarUSER@$DB_USER@g $PERMISOS_DB 
   sed -i s@reemplazarPASS@$DB_PASS@g $PERMISOS_DB
@@ -142,12 +146,17 @@ if [ "$EXISTS" != "$DB_NAME" -o "$TABLES" -eq 0 ]; then
   sed -i s@reemplazarIPASS@$DB_PASS@g $PERMISOS_DB
   
   echo "DROP DATABASE IF EXISTS $DB_NAME;" > $BASE_DB
+
   head -n3 $PERMISOS_DB >> $BASE_DB
   cat $TPL_BASE_DB >>  $BASE_DB
   tail -n2 $PERMISOS_DB >> $BASE_DB
 
   #Creamos la base con permisos
-  $MYSQL < $BASE_DB  
+  $MYSQL -f < $BASE_DB 
+
+  #Actualizamos la Base
+  sed s@reemplazarDATABASE@$DB_NAME@g $TPL_UPDATES_DB > $UPDATES_DB
+  $MYSQL -f < $UPDATES_DB
 fi
 
 if [ ! -f /var/log/meran/$ID/index-rooted-meran.spd ]; then
