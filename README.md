@@ -38,7 +38,7 @@ docker run -e DB_NAME=meran -e DB_USER=meran \
 
 ## Acceder al sistema
 
-El OPAC estará disponible ingresando a la URL: http://localhost:8000 y la Intranet ingresando a la URL: http://localhost:4443. El usuario por defecto es *meranadmin* y su contraseña de acceso *meranadmin123*).
+El OPAC estará disponible ingresando a la URL: http://localhost:8000 y la Intranet ingresando a la URL: https://localhost:4443. El usuario por defecto es *meranadmin* y su contraseña de acceso *meranadmin123*).
 
 # Guía detallada
 
