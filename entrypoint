@@ -44,8 +44,7 @@ UPDATES_DB=/tmp/updates_meran.sql
 
 if [ ! -L $MERAN_PATH/$ID/files ]; then
   # Ya existe un directorio files en el repo 
-  [ -d $MERAN_PATH/$ID/files ] && mv $MERAN_PATH/$ID/files/* /meran/files/ && rm -rf $MERAN_PATH/$ID/files/
-  [ -L $MERAN_PATH/$ID/files ] || ln -s /meran/files $MERAN_PATH/$ID/files
+  [ -d $MERAN_PATH/$ID/files ] && mv $MERAN_PATH/$ID/files/* /meran/files/ && rm -rf $MERAN_PATH/$ID/files/ && ln -s /meran/files $MERAN_PATH/$ID/files
 fi
 
 [ -d /etc/apache2/sites-enabled ] && rm -fr /etc/apache2/sites-enabled
