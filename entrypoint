@@ -2,38 +2,6 @@
 set -e
 # Instalar dependencias
 
-# Copiar al volumen la configuracion
-CONFIG_DIR=/etc/meran
-ID=main
-
-DB_NAME=${DB_NAME:-meran}
-DB_HOST=${DB_HOST:-mysql}
-DB_USER=${DB_USER:-meran}
-DB_PASS=${DB_PASS:-meranpass}
-
-MERAN_PATH=/usr/local/share/meran
-MAIN_CONFIG=$CONFIG_DIR/meran$ID.conf
-TPL_MAIN_CONFIG=$MERAN_PATH/$ID/docs/instalador/meran.conf
-TPL_INIT_SCRIPT=$MERAN_PATH/$ID/docs/instalador/iniciando.pl
-INIT_SCRIPT=$CONFIG_DIR/iniciando$ID.pl
-TPL_APACHE_CONF_OPAC=$MERAN_PATH/$ID/docs/instalador/debian6/apache-jaula-opac
-TPL_APACHE_CONF_SSL=$MERAN_PATH/$ID/docs/instalador/debian6/apache-jaula-ssl
-APACHE_CONF_OPAC=/etc/apache2/sites-enabled/opac.conf
-APACHE_CONF_SSL=/etc/apache2/sites-enabled/ssl.conf
-SPHINX_CONFIG_DIR=$MERAN_PATH/$ID/sphinx/etc
-SPHINX_BIN=$MERAN_PATH/$ID/sphinx/bin
-SPHINX_CONFIG=$SPHINX_CONFIG_DIR/sphinx.conf
-TPL_SPHINX_CONFIG=$MERAN_PATH/$ID/docs/instalador/sphinx.conf
-MODULOS_JAULA=$MERAN_PATH/$ID/intranet/modules/C4
-PERL_LIB_JAULA=$MODULOS_JAULA/Share/share/perl/5.10.1/:$MODULOS_JAULA/Share/lib/perl/5.10.1/:$MODULOS_JAULA/Share/share/perl/5.10/:$MODULOS_JAULA/C4/Share/share/perl/5.10.1/:$MODULOS_JAULA/Share/lib/perl/5.10/:$MODULOS_JAULA/Share/lib/perl5/
-
-TPL_BASE_DB=$MERAN_PATH/$ID/docs/instalador/base.sql
-TPL_UPDATES_DB=$MERAN_PATH/$ID/docs/instalador/updates.sql
-TPL_PERMISOS_DB=$MERAN_PATH/$ID/docs/instalador/permisosbdd.sql
-PERMISOS_DB=/tmp/permisos_meran.sql
-BASE_DB=/tmp/demo_meran.sql
-UPDATES_DB=/tmp/updates_meran.sql
-
 [ -d $MERAN_PATH ] || ( echo "El directorio $MERAN_PATH debe existir"; exit 1 )
 
 [ -d $MERAN_PATH/$ID ] || mkdir $MERAN_PATH/$ID
