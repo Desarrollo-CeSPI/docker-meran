@@ -1,7 +1,27 @@
 FROM debian:squeeze
-RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 
-# Copiar al volumen la configuracion
+
+#Instalacion de dependencias
+RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
+RUN apt-get update && apt-get install -yqq --force-yes apt-utils \
+    git-core \
+    apache2 \
+    apache2-mpm-prefork \
+    libapache2-mod-perl2 \
+    libgd2-xpm\
+    libxpm4\
+    htmldoc\
+    libaspell15\
+    ntpdate\
+    libhttp-oai-perl\
+    libxml-sax-writer-perl\
+    libxml-libxslt-perl\
+    libyaml-perl\
+    mysql-client
+
+
+
+# Configuracion del volumen
 ENV CONFIG_DIR /etc/meran
 ENV ID main
 
@@ -36,11 +56,6 @@ ENV UPDATES_DB /tmp/updates_meran.sql
 
 
 
-
-
-
-
-RUN apt-get update && apt-get -y --force-yes upgrade && apt-get install -y --force-yes apt-utils git-core apache2 apache2-mpm-prefork libapache2-mod-perl2 libgd2-xpm libxpm4 htmldoc libaspell15 ntpdate libhttp-oai-perl libxml-sax-writer-perl libxml-libxslt-perl libyaml-perl mysql-client
 
 
 
