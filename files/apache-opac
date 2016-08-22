@@ -25,10 +25,10 @@ ErrorDocument 404 /meran/informacion/404notfound.pl
 Alias /oai /usr/local/share/meran/main/opac/cgi-bin/oai.pl
 <Location /oai >
       SetHandler perl-script
-            PerlResponseHandler ModPerl::Registry
-	          PerlOptions +ParseHeaders
-		        Options +ExecCGI
-			</Location>
+      PerlResponseHandler ModPerl::Registry
+      PerlOptions +ParseHeaders
+      Options +ExecCGI
+</Location>
 
 
 <Perl>
@@ -45,9 +45,9 @@ PerlPostConfigRequire /etc/meran/iniciandomain.pl
 Alias /includes/ "/usr/local/share/meran/main/includes/"
 <Directory /usr/local/share/meran/main/includes/ >
  Options  -Indexes
-   Order allow,deny
-     Allow from all
-     </Directory>
+ Order allow,deny
+ Allow from all
+</Directory>
 
 Alias /uploads/covers/ "/usr/local/share/meran/main/files/intranet/uploads/covers/"
 <Directory /usr/local/share/meran/main/files/intranet/uploads/covers/ >
@@ -58,20 +58,20 @@ Alias /uploads/covers/ "/usr/local/share/meran/main/files/intranet/uploads/cover
 Alias /uploads/covers-added/ "/usr/local/share/meran/main/files/intranet/uploads/covers-added/"
 <Directory /usr/local/share/meran/main/files/intranet/uploads/covers-added/ >
   Order allow,deny
-    Allow from all
-    </Directory>
+  Allow from all
+</Directory>
 
 
 Alias /uploads/ "/usr/local/share/meran/main/files/opac/uploads/"
 <Directory /usr/local/share/meran/main/files/opac/uploads/ >
-Order allow,deny
-Allow from all
+ Order allow,deny
+ Allow from all
 </Directory>
 
 Alias /private-uploads/ "/usr/local/share/meran/main/files/intranet/private-uploads/"
 <Directory /usr/local/share/meran/main/files/intranet/private-uploads/ >
-Order allow,deny
-Allow from all
+ Order allow,deny
+ Allow from all
 </Directory>
 
 </VirtualHost>

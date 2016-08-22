@@ -68,7 +68,7 @@ if [ "$DBEXISTS" -ne 0  ] || [ "$DBEXISTS" -eq 0 -a "$COUNT_TABLES" -eq 0 ]; the
   $MYSQL -f < $UPDATES_DB
 fi
 
-if [ ! -f /var/log/meran/$ID/index-rooted-meran.spd ]; then
+if [ ! -f /var/log/meran/main/index-rooted-meran.spd ]; then
     # Generando el índice la primera vez si no existe
     /opt/sphinx/bin/indexer -c /etc/meran/sphinx.conf --all --rotate
 fi
