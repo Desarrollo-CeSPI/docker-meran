@@ -1,70 +1,12 @@
 #!/bin/bash
 set -e
 # Instalar dependencias
-
-[ -d $MERAN_PATH ] || ( echo "El directorio $MERAN_PATH debe existir"; exit 1 )
-
-[ -d $MERAN_PATH/$ID ] || mkdir $MERAN_PATH/$ID
-
-[ -L $CONFIG_DIR ] || ln -s /meran/config $CONFIG_DIR
 [ -L /var/log/meran ] || ln -s /meran/logs /var/log/meran
-[ -d /var/log/meran/$ID ] || mkdir /var/log/meran/$ID
+[ -d /var/log/meran/main ] || mkdir /var/log/meran/main
 
-if [ ! -L $MERAN_PATH/$ID/files ]; then
-  # Ya existe un directorio files en el repo 
-  [ -d $MERAN_PATH/$ID/files ] && mv $MERAN_PATH/$ID/files/* /meran/files/ && rm -rf $MERAN_PATH/$ID/files/ && ln -s /meran/files $MERAN_PATH/$ID/files
-fi
-
-[ -d /etc/apache2/sites-enabled ] && rm -fr /etc/apache2/sites-enabled
-[ -L /etc/apache2/sites-enabled ] || ln -s /meran/apache/ /etc/apache2/sites-enabled
-
-if [ ! -f $MAIN_CONFIG ]; then
-  # Configuracion principal de meran
-  [ -f $TPL_MAIN_CONFIG ] || ( echo "El archivo $TPL_MAIN_CONFIG debe existir"; exit 1 )
-  [ -d $CONFIG_DIR ] || mkdir -p $CONFIG_DIR
-  sed s@reemplazarID@$ID@g $TPL_MAIN_CONFIG > $MAIN_CONFIG
-  sed -i s@reemplazarUSER@$DB_USER@g $MAIN_CONFIG
-  sed -i s@reemplazarPASS@$DB_PASS@g $MAIN_CONFIG
-  sed -i s@reemplazarBDDHOST@$DB_HOST@g $MAIN_CONFIG
-  sed -i s@reemplazarDATABASE@$DB_NAME@g $MAIN_CONFIG
-  sed -i s@reemplazarPATHBASE@$MERAN_PATH@g  $MAIN_CONFIG
-  sed -i 's,^\(use_socket=\).*,\1'0',' $MAIN_CONFIG
-fi
-
-if [ ! -f $INIT_SCRIPT ]; then
-  # Configuracion del script de inicio
-  [ -f $TPL_INIT_SCRIPT ] || ( echo "El archivo $TPL_INIT_SCRIPT debe existir"; exit 1 )
-  sed s@reemplazarID@$ID@g $TPL_INIT_SCRIPT > $INIT_SCRIPT
-  sed -i s@reemplazarCONFMERAN@$CONFIG_DIR@g $INIT_SCRIPT
-  sed -i s@reemplazarPATHBASE@$MERAN_PATH@g $INIT_SCRIPT
-fi
-
-if [ ! -f $SPHINX_CONFIG ]; then
-  [ -d $SPHINX_CONFIG_DIR ] || mkdir $SPHINX_CONFIG_DIR
-  sed s@reemplazarID@$ID@g $TPL_SPHINX_CONFIG > $SPHINX_CONFIG
-  sed -i s@reemplazarIUSER@$DB_USER@g $SPHINX_CONFIG
-  sed -i s@reemplazarIPASS@$DB_PASS@g $SPHINX_CONFIG
-  sed -i s@reemplazarBDDHOST@$DB_HOST@g $SPHINX_CONFIG
-  sed -i s@reemplazarDATABASE@$DB_NAME@g $SPHINX_CONFIG
-  mv $SPHINX_CONFIG /meran/config/
-  ln -s /meran/config/sphinx.conf $SPHINX_CONFIG
-fi
-
-if [ ! -f $APACHE_CONF_SSL ]; then
-  # Configuracion Apache Intranet
-  [ -f $TPL_APACHE_CONF_SSL ] || ( echo "El archivo $TPL_APACHE_CONF_SSL debe existir"; exit 1 )
-  sed s@reemplazarID@$ID@g $TPL_APACHE_CONF_SSL > $APACHE_CONF_SSL
-  sed -i s@reemplazarCONFMERAN@$CONFIG_DIR@g $APACHE_CONF_SSL
-  sed -i s@reemplazarPATHBASE@$MERAN_PATH@g $APACHE_CONF_SSL
-fi
-
-if [ ! -f $APACHE_CONF_OPAC ]; then
-  # Configuracion Apache Opac
-  [ -f $TPL_APACHE_CONF_OPAC ] || ( echo "El archivo $TPL_APACHE_CONF_OPAC debe existir"; exit 1 )
-  sed s@reemplazarID@$ID@g $TPL_APACHE_CONF_OPAC > $APACHE_CONF_OPAC
-  sed -i s@reemplazarCONFMERAN@$CONFIG_DIR@g $APACHE_CONF_OPAC
-  sed -i s@reemplazarPATHBASE@$MERAN_PATH@g $APACHE_CONF_OPAC
-fi
+[ -d /etc/apache2/sites-enabled ] && rm -fr /etc/apache2/sites-enabled/*
+ln -s /opt/apache-opac /etc/apache2/sites-enabled/opac.conf
+ln -s /opt/apache-ssl /etc/apache2/sites-enabled/ssl.conf
 
 # Bug: Apache fails to start after reboot due to missing /var/run/apache2 directory when SSL is enabled 
 [ -d /var/run/apache2 ] || mkdir /var/run/apache2
@@ -127,18 +69,18 @@ if [ "$DBEXISTS" -ne 0  ] || [ "$DBEXISTS" -eq 0 -a "$COUNT_TABLES" -eq 0 ]; the
 fi
 
 if [ ! -f /var/log/meran/$ID/index-rooted-meran.spd ]; then
-  # Generando el índice la primera vez si no existe
-  $SPHINX_BIN/indexer -c $SPHINX_CONFIG --all --rotate
+    # Generando el índice la primera vez si no existe
+    /opt/sphinx/bin/indexer -c /etc/meran/sphinx.conf --all --rotate
 fi
 
 #CONSIDERAR los crons en la maquina host así como la rotacion de logs en el volumen
 if [ ! -d /cron ]; then
   mkdir /cron
-  printf "#!/bin/bash\n export PERL5LIB=$PERL_LIB_JAULA; export MERAN_CONF=$MAIN_CONFIG; cd $MERAN_PATH/$ID/intranet/modules/ ; perl ../cgi-bin/cron/reindexar.pl" > /cron/reindexar
-  printf "#!/bin/bash\n export PERL5LIB=$PERL_LIB_JAULA; export MERAN_CONF=$MAIN_CONFIG; cd $MERAN_PATH/$ID/intranet/modules/ ; perl ../cgi-bin/cron/obtener_portadas_de_registros.pl" > /cron/portadas
-  printf "#!/bin/bash\n export PERL5LIB=$PERL_LIB_JAULA; export MERAN_CONF=$MAIN_CONFIG; cd $MERAN_PATH/$ID/intranet/modules/ ; perl ../cgi-bin/cron/generar_indice.pl" > /cron/generar_indice
-  printf "#!/bin/bash\n export PERL5LIB=$PERL_LIB_JAULA; export MERAN_CONF=$MAIN_CONFIG; cd $MERAN_PATH/$ID/intranet/modules/ ; perl ../cgi-bin/cron/recordatorio_prestamos_vto.pl" > /cron/mail_recordatorio_prestamos
-  printf "#!/bin/bash\n export PERL5LIB=$PERL_LIB_JAULA; export MERAN_CONF=$MAIN_CONFIG; cd $MERAN_PATH/$ID/intranet/modules/ ; perl ../cgi-bin/cron/mail_prestamos_vencidos.pl" > /cron/mail_prestamos_vencidos
+  printf "#!/bin/bash\n cd $MERAN_PATH/$ID/intranet/modules/ ; perl ../cgi-bin/cron/reindexar.pl" > /cron/reindexar
+  printf "#!/bin/bash\n cd $MERAN_PATH/$ID/intranet/modules/ ; perl ../cgi-bin/cron/obtener_portadas_de_registros.pl" > /cron/portadas
+  printf "#!/bin/bash\n cd $MERAN_PATH/$ID/intranet/modules/ ; perl ../cgi-bin/cron/generar_indice.pl" > /cron/generar_indice
+  printf "#!/bin/bash\n cd $MERAN_PATH/$ID/intranet/modules/ ; perl ../cgi-bin/cron/recordatorio_prestamos_vto.pl" > /cron/mail_recordatorio_prestamos
+  printf "#!/bin/bash\n cd $MERAN_PATH/$ID/intranet/modules/ ; perl ../cgi-bin/cron/mail_prestamos_vencidos.pl" > /cron/mail_prestamos_vencidos
   chown www-data:www-data -R /cron/
   chmod +x /cron/*
 fi
