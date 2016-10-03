@@ -22,7 +22,6 @@ RUN apt-get update -qq && apt-get install -yqq --force-yes apt-utils \
     libyaml-perl\
     mysql-client
 
-
 RUN git clone -b 0.10.6 https://github.com/Desarrollo-CeSPI/meran.git /usr/local/share/meran/main
 
 
@@ -54,7 +53,7 @@ ADD files/iniciandomain.pl /etc/meran/
 ADD files/meranmain.conf /etc/meran/
 ADD files/sphinx.conf /etc/meran/
 
-VOLUME [ "/meran/config", "/meran/logs", "/meran/files", "/meran/apache", "/meran/ssl" ]
+VOLUME [ "/meran/config", "/meran/logs", "/meran/files", "/meran/apache", "/meran/ssl", "/usr/local/share/meran/" ]
 
 EXPOSE 80
 EXPOSE 443
