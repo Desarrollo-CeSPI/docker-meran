@@ -70,6 +70,11 @@ fi
 
 if [ ! -f /var/log/meran/main/index-rooted-meran.spd ]; then
     # Generando el índice la primera vez si no existe
+    sed -i s@reemplazarNAME@$DB_NAME@g $PERMISOS_DB
+    sed -i s@reemplazarUSER@$DB_USER@g $PERMISOS_DB
+    sed -i s@reemplazarPASS@$DB_PASS@g $PERMISOS_DB
+    sed -i s@reemplazarHOST@$DB_HOST@g $PERMISOS_DB
+
     /opt/sphinx/bin/indexer -c /etc/meran/sphinx.conf --all --rotate
 fi
 
