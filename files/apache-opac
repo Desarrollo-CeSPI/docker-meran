@@ -49,8 +49,8 @@ Alias /includes/ "/usr/local/share/meran/main/includes/"
  Allow from all
 </Directory>
 
-Alias /uploads/covers/ "/usr/local/share/meran/main/files/intranet/uploads/covers/"
-<Directory /usr/local/share/meran/main/files/intranet/uploads/covers/ >
+Alias /uploads/covers/ "/meran/files/intranet/uploads/covers/"
+<Directory /meran/files/intranet/uploads/covers/ >
   Order allow,deny
     Allow from all
     </Directory>
@@ -62,14 +62,14 @@ Alias /uploads/covers-added/ "/usr/local/share/meran/main/files/intranet/uploads
 </Directory>
 
 
-Alias /uploads/ "/usr/local/share/meran/main/files/opac/uploads/"
-<Directory /usr/local/share/meran/main/files/opac/uploads/ >
+Alias /uploads/ "/meran/files/opac/uploads/"
+<Directory /meran/files/opac/uploads/ >
  Order allow,deny
  Allow from all
 </Directory>
 
-Alias /private-uploads/ "/usr/local/share/meran/main/files/intranet/private-uploads/"
-<Directory /usr/local/share/meran/main/files/intranet/private-uploads/ >
+Alias /private-uploads/ "/meran/files/intranet/private-uploads/"
+<Directory /meran/files/intranet/private-uploads/ >
  Order allow,deny
  Allow from all
 </Directory>
