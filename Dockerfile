@@ -35,13 +35,8 @@ ENV DB_PASS ${DB_PASS:-meranpass}
 
 ENV MERAN_PATH /usr/local/share/meran
 ENV MERAN_CONFIG /etc/meran/meranmain.conf
-
-ENV TPL_BASE_DB $MERAN_PATH/$ID/docs/instalador/base.sql
-ENV TPL_UPDATES_DB $MERAN_PATH/$ID/docs/instalador/updates.sql
-ENV TPL_PERMISOS_DB $MERAN_PATH/$ID/docs/instalador/permisosbdd.sql
-ENV PERMISOS_DB /tmp/permisos_meran.sql
-ENV BASE_DB /tmp/demo_meran.sql
-ENV UPDATES_DB /tmp/updates_meran.sql
+ENV SPHINX_CONFIG /etc/meran/sphinx.conf
+ENV TPL_MAIN_CONFIG $MERAN_PATH/$ID/docs/instalador/meran.conf
 
 ENV PERL5LIB /opt/modules/Share/share/perl/5.10.1/:/opt/modules/Share/lib/perl/5.10.1/:/opt/modules/Share/share/perl/5.10/:/opt/modules/C4/Share/share/perl/5.10.1/:/opt/modules/Share/lib/perl/5.10/:/opt/modules/Share/lib/perl5/
 
@@ -50,7 +45,6 @@ ADD files/jaula64.tar.gz /opt/modules
 ADD files/apache-opac /opt/
 ADD files/apache-ssl /opt/
 ADD files/iniciandomain.pl /etc/meran/
-ADD files/meranmain.conf /etc/meran/
 ADD files/sphinx.conf /etc/meran/
 
 VOLUME [ "/meran/config", "/meran/logs", "/meran/files", "/meran/apache", "/meran/ssl", "/usr/local/share/meran/" ]

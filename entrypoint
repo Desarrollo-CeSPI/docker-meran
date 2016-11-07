@@ -1,5 +1,18 @@
 #!/bin/bash
 set -e
+
+if [ ! -f $MAIN_CONFIG ]; then
+  # Configuracion principal de meran
+  [ -f $TPL_MAIN_CONFIG ] || ( echo "El archivo $TPL_MAIN_CONFIG debe existir"; exit 1 )
+  sed s@reemplazarID@$ID@g $TPL_MAIN_CONFIG > $MAIN_CONFIG
+  sed -i s@reemplazarUSER@$DB_USER@g $MAIN_CONFIG
+  sed -i s@reemplazarPASS@$DB_PASS@g $MAIN_CONFIG
+  sed -i s@reemplazarBDDHOST@$DB_HOST@g $MAIN_CONFIG
+  sed -i s@reemplazarDATABASE@$DB_NAME@g $MAIN_CONFIG
+  sed -i s@reemplazarPATHBASE@$MERAN_PATH@g  $MAIN_CONFIG
+  sed -i 's,^\(use_socket=\).*,\1'0',' $MAIN_CONFIG
+fi
+
 # Instalar dependencias
 [ -L /var/log/meran ] || ln -s /meran/logs /var/log/meran
 [ -d /var/log/meran/main ] || mkdir /var/log/meran/main
@@ -34,6 +47,16 @@ fi
 
 chown www-data:www-data -R /meran
 chown www-data:www-data -R $MERAN_PATH
+
+
+### Database configuration
+TPL_BASE_DB=$MERAN_PATH/$ID/docs/instalador/base.sql
+TPL_UPDATES_DB=$MERAN_PATH/$ID/docs/instalador/updates.sql
+TPL_PERMISOS_DB=$MERAN_PATH/$ID/docs/instalador/permisosbdd.sql
+PERMISOS_DB=/tmp/permisos_meran.sql
+BASE_DB=/tmp/demo_meran.sql
+UPDATES_DB=/tmp/updates_meran.sql
+
 
 MYSQL="mysql -u$DB_USER -h$DB_HOST --default-character-set=utf8 --batch --skip-column-names"
 if [ ! -z "$DB_PASS" ]; then
@@ -70,12 +93,13 @@ fi
 
 if [ ! -f /var/log/meran/main/index-rooted-meran.spd ]; then
     # Generando el índice la primera vez si no existe
-    sed -i s@reemplazarNAME@$DB_NAME@g /etc/meran/sphinx.conf
-    sed -i s@reemplazarUSER@$DB_USER@g /etc/meran/sphinx.conf
-    sed -i s@reemplazarPASS@$DB_PASS@g /etc/meran/sphinx.conf
-    sed -i s@reemplazarHOST@$DB_HOST@g /etc/meran/sphinx.conf
+    SPHINX_CONFIG=$SPHINX_CONFIG
+    sed -i s@reemplazarNAME@$DB_NAME@g $SPHINX_CONFIG
+    sed -i s@reemplazarUSER@$DB_USER@g $SPHINX_CONFIG
+    sed -i s@reemplazarPASS@$DB_PASS@g $SPHINX_CONFIG
+    sed -i s@reemplazarHOST@$DB_HOST@g $SPHINX_CONFIG
 
-    /opt/sphinx/bin/indexer -c /etc/meran/sphinx.conf --all --rotate
+    /opt/sphinx/bin/indexer -c $SPHINX_CONFIG --all --rotate
 fi
 
 #CONSIDERAR los crons en la maquina host así como la rotacion de logs en el volumen
