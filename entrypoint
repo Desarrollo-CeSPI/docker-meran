@@ -1,16 +1,16 @@
 #!/bin/bash
 set -e
 
-if [ ! -f $MAIN_CONFIG ]; then
+if [ ! -f $MERAN_CONFIG ]; then
   # Configuracion principal de meran
   [ -f $TPL_MAIN_CONFIG ] || ( echo "El archivo $TPL_MAIN_CONFIG debe existir"; exit 1 )
-  sed s@reemplazarID@$ID@g $TPL_MAIN_CONFIG > $MAIN_CONFIG
-  sed -i s@reemplazarUSER@$DB_USER@g $MAIN_CONFIG
-  sed -i s@reemplazarPASS@$DB_PASS@g $MAIN_CONFIG
-  sed -i s@reemplazarBDDHOST@$DB_HOST@g $MAIN_CONFIG
-  sed -i s@reemplazarDATABASE@$DB_NAME@g $MAIN_CONFIG
-  sed -i s@reemplazarPATHBASE@$MERAN_PATH@g  $MAIN_CONFIG
-  sed -i 's,^\(use_socket=\).*,\1'0',' $MAIN_CONFIG
+  sed s@reemplazarID@$ID@g $TPL_MAIN_CONFIG > $MERAN_CONFIG
+  sed -i s@reemplazarUSER@$DB_USER@g $MERAN_CONFIG
+  sed -i s@reemplazarPASS@$DB_PASS@g $MERAN_CONFIG
+  sed -i s@reemplazarBDDHOST@$DB_HOST@g $MERAN_CONFIG
+  sed -i s@reemplazarDATABASE@$DB_NAME@g $MERAN_CONFIG
+  sed -i s@reemplazarPATHBASE@$MERAN_PATH@g  $MERAN_CONFIG
+  sed -i 's,^\(use_socket=\).*,\1'0',' $MERAN_CONFIG
 fi
 
 # Instalar dependencias
