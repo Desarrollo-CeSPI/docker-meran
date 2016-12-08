@@ -114,4 +114,5 @@ if [ ! -d /cron ]; then
   chmod +x /cron/*
 fi
 
+/usr/sbin/cron -f &
 /usr/sbin/apache2ctl -D FOREGROUND
