@@ -20,7 +20,11 @@ RUN apt-get update -qq && apt-get install -yqq --force-yes apt-utils \
     libxml-sax-writer-perl\
     libxml-libxslt-perl\
     libyaml-perl\
-    mysql-client
+    mysql-client\
+    cron\
+    && rm -rf /var/lib/apt/lists/*
+
+
 
 RUN git clone -b 0.10.6 https://github.com/Desarrollo-CeSPI/meran.git /usr/local/share/meran/main
 
