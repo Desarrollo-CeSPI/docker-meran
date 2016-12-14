@@ -98,7 +98,6 @@ if [ ! -f /var/log/meran/main/index-rooted-meran.spd ]; then
     sed -i s@reemplazarUSER@$DB_USER@g $SPHINX_CONFIG
     sed -i s@reemplazarPASS@$DB_PASS@g $SPHINX_CONFIG
     sed -i s@reemplazarHOST@$DB_HOST@g $SPHINX_CONFIG
-    sed -i s@reemplazarID@$ID@g $SPHINX_CONFIG
 
     /opt/sphinx/bin/indexer -c $SPHINX_CONFIG --all --rotate
 fi
