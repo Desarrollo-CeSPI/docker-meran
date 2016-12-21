@@ -2,8 +2,8 @@ FROM debian:squeeze
 
 
 #Instalacion de dependencias
-ADD apt.conf /etc/apt/apt.conf
-ADD sources.list /etc/apt/sources.list
+ADD files/apt.conf /etc/apt/apt.conf
+ADD files/sources.list /etc/apt/sources.list
 
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 RUN apt-get update -qq && apt-get install -yqq --force-yes apt-utils \
