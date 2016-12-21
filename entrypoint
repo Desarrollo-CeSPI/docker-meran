@@ -10,6 +10,8 @@ if [ ! -f $MERAN_CONFIG ]; then
   sed -i s@reemplazarBDDHOST@$DB_HOST@g $MERAN_CONFIG
   sed -i s@reemplazarDATABASE@$DB_NAME@g $MERAN_CONFIG
   sed -i s@reemplazarPATHBASE@$MERAN_PATH@g  $MERAN_CONFIG
+  sed -i 's,^\(sphinx_conf=\).*,\f'/etc/meran/sphinx.conf',' $MERAN_CONFIG
+  sed -i 's,^\(sphinx_bin_dir=\).*,\/'/opt/sphinx/bin',' $MERAN_CONFIG
   sed -i 's,^\(use_socket=\).*,\1'0',' $MERAN_CONFIG
 fi
 
@@ -91,9 +93,8 @@ if [ "$DBEXISTS" -ne 0  ] || [ "$DBEXISTS" -eq 0 -a "$COUNT_TABLES" -eq 0 ]; the
   $MYSQL -f < $UPDATES_DB
 fi
 
-if [ ! -f /var/log/meran/main/index-rooted-meran.spd ]; then
+if [ -f $SPHINX_CONFIG ]; then
     # Generando el índice la primera vez si no existe
-    SPHINX_CONFIG=$SPHINX_CONFIG
     sed -i s@reemplazarNAME@$DB_NAME@g $SPHINX_CONFIG
     sed -i s@reemplazarUSER@$DB_USER@g $SPHINX_CONFIG
     sed -i s@reemplazarPASS@$DB_PASS@g $SPHINX_CONFIG
