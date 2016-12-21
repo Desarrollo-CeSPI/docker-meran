@@ -1,0 +1,8 @@
+[Unit]
+Description=Enviar email de prestamos vencidos todas las mañanas
+
+[Timer]
+OnCalendar=Mon,Fri *-*-* 7:30
+
+[Install]
+WantedBy=multi-user.target

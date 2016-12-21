@@ -1,0 +1,6 @@
+[Unit]
+Description=Meran: descargar portadas en el contenedor %i
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/docker exec -d %i /cron/portadas

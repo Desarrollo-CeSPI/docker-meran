@@ -1,0 +1,8 @@
+[Unit]
+Description=Descargar portadas en la mañana y a media tarde
+
+[Timer]
+OnCalendar=Mon,Fri *-*-* 7,12:30
+
+[Install]
+WantedBy=multi-user.target
