@@ -70,15 +70,15 @@ DBEXISTS=$($MYSQL -e "SHOW DATABASES LIKE '"$DB_NAME"';" | grep -q "$DB_NAME" ; 
 COUNT_TABLES=$($MYSQL $DB_NAME -e "SHOW TABLES; SELECT FOUND_ROWS();" | tail -1)
 
 if [ "$DBEXISTS" -ne 0  ] || [ "$DBEXISTS" -eq 0 -a "$COUNT_TABLES" -eq 0 ]; then
-  
+
   #La base no existe o está vacía
   sed s@reemplazarDATABASE@$DB_NAME@g $TPL_PERMISOS_DB > $PERMISOS_DB
-  sed -i s@reemplazarUSER@$DB_USER@g $PERMISOS_DB 
+  sed -i s@reemplazarUSER@$DB_USER@g $PERMISOS_DB
   sed -i s@reemplazarPASS@$DB_PASS@g $PERMISOS_DB
   sed -i s@reemplazarHOST@$DB_HOST@g $PERMISOS_DB
   sed -i s@reemplazarIUSER@$DB_USER@g $PERMISOS_DB
   sed -i s@reemplazarIPASS@$DB_PASS@g $PERMISOS_DB
-  
+ 
   echo "DROP DATABASE IF EXISTS $DB_NAME;" > $BASE_DB
 
   head -n3 $PERMISOS_DB >> $BASE_DB
@@ -86,7 +86,7 @@ if [ "$DBEXISTS" -ne 0  ] || [ "$DBEXISTS" -eq 0 -a "$COUNT_TABLES" -eq 0 ]; the
   tail -n2 $PERMISOS_DB >> $BASE_DB
 
   #Creamos la base con permisos
-  $MYSQL -f < $BASE_DB 
+  $MYSQL -f < $BASE_DB
 
   #Actualizamos la Base
   sed s@reemplazarDATABASE@$DB_NAME@g $TPL_UPDATES_DB > $UPDATES_DB
@@ -115,5 +115,4 @@ if [ ! -d /cron ]; then
   chmod +x /cron/*
 fi
 
-/usr/sbin/cron -f &
 /usr/sbin/apache2ctl -D FOREGROUND
