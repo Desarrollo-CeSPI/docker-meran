@@ -10,8 +10,8 @@ if [ ! -f $MERAN_CONFIG ]; then
   sed -i s@reemplazarBDDHOST@$DB_HOST@g $MERAN_CONFIG
   sed -i s@reemplazarDATABASE@$DB_NAME@g $MERAN_CONFIG
   sed -i s@reemplazarPATHBASE@$MERAN_PATH@g  $MERAN_CONFIG
-  sed -i 's,^\(sphinx_conf=\).*,\f'/etc/meran/sphinx.conf',' $MERAN_CONFIG
-  sed -i 's,^\(sphinx_bin_dir=\).*,\/'/opt/sphinx/bin',' $MERAN_CONFIG
+  sed -i 's,^\(sphinx_conf=\).*,\1'/etc/meran/sphinx.conf',' $MERAN_CONFIG
+  sed -i 's,^\(sphinx_bin_dir=\).*,\1'/opt/sphinx/bin',' $MERAN_CONFIG
   sed -i 's,^\(use_socket=\).*,\1'0',' $MERAN_CONFIG
 fi
 
