@@ -21,7 +21,6 @@ RUN apt-get update -qq && apt-get install -yqq --force-yes apt-utils \
     libxml-libxslt-perl\
     libyaml-perl\
     mysql-client\
-    cron\
     && rm -rf /var/lib/apt/lists/*
 
 
