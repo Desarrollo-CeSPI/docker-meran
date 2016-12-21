@@ -5,4 +5,4 @@ Description=reindexar cada 15 minutos
 OnCalendar=Mon,Fri *-*-* *:0,15,30,45:00
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target

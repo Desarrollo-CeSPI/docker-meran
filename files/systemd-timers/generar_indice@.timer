@@ -5,4 +5,4 @@ Description=Generar indice
 OnCalendar=Mon *-*-* 6:00
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target

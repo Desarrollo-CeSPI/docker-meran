@@ -5,4 +5,4 @@ Description=Enviar email de recordatorio todas las mañanas
 OnCalendar=Mon,Fri *-*-* 7:30
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
