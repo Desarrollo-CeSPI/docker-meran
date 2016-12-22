@@ -11,8 +11,9 @@ if [ ! -f $MERAN_CONFIG ]; then
   sed -i s@reemplazarDATABASE@$DB_NAME@g $MERAN_CONFIG
   sed -i s@reemplazarPATHBASE@$MERAN_PATH@g  $MERAN_CONFIG
   sed -i 's,^\(sphinx_conf=\).*,\1'/etc/meran/sphinx.conf',' $MERAN_CONFIG
-  sed -i 's,^\(sphinx_bin_dir=\).*,\1'/opt/sphinx/bin',' $MERAN_CONFIG
+  sed -i 's,^\(sphinx_bin_dir=\).*,\1'/opt/sphinx/bin/',' $MERAN_CONFIG
   sed -i 's,^\(use_socket=\).*,\1'0',' $MERAN_CONFIG
+  export MERAN_CONF=$MERAN_CONFIG
 fi
 
 # Instalar dependencias
