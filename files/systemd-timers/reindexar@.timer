@@ -2,7 +2,7 @@
 Description=reindexar cada 15 minutos
 
 [Timer]
-OnCalendar=Mon,Fri *-*-* *:0,15,30,45:00
+OnCalendar=Mon..Fri *-*-* *:0,15,30,45:00
 
 [Install]
 WantedBy=default.target
