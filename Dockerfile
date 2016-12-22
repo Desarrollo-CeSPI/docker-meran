@@ -38,6 +38,7 @@ ENV DB_PASS ${DB_PASS:-meranpass}
 
 ENV MERAN_PATH /usr/local/share/meran
 ENV MERAN_CONFIG /etc/meran/meranmain.conf
+ENV MERAN_CONF /etc/meran/meranmain.conf
 ENV SPHINX_CONFIG /etc/meran/sphinx.conf
 ENV TPL_MAIN_CONFIG $MERAN_PATH/$ID/docs/instalador/meran.conf
 
