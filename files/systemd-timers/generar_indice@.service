@@ -3,4 +3,4 @@ Description=Meran: generar indice en el contenedor %i
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/docker exec -d %i /cron/generar_indice
+ExecStart=/usr/bin/docker exec %i /cron/generar_indice

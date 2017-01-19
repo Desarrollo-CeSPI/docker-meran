@@ -3,4 +3,4 @@ Description=Meran: reindexar en el contenedor %i
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/docker exec -d %i /cron/reindexar
+ExecStart=/usr/bin/docker exec %i /cron/reindexar

@@ -3,4 +3,4 @@ Description=Meran: envia mail de prestamos vencidos en el contenedor %i
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/docker exec -d %i /cron/mail_prestamos_vencidos
+ExecStart=/usr/bin/docker exec %i /cron/mail_prestamos_vencidos
