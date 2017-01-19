@@ -55,7 +55,7 @@ Alias /uploads/covers/ "/meran/files/intranet/uploads/covers/"
     Allow from all
     </Directory>
 
-Alias /uploads/covers-added/ "/usr/local/share/meran/main/files/intranet/uploads/covers-added/"
+Alias /uploads/covers-added/ "/meran/files/intranet/uploads/covers-added/"
 <Directory /usr/local/share/meran/main/files/intranet/uploads/covers-added/ >
   Order allow,deny
   Allow from all
