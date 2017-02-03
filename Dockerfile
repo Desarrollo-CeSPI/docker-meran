@@ -40,10 +40,11 @@ ENV MERAN_PATH /usr/local/share/meran
 ENV MERAN_CONFIG /etc/meran/meranmain.conf
 ENV MERAN_CONF /etc/meran/meranmain.conf
 ENV SPHINX_CONFIG /etc/meran/sphinx.conf
-ENV TPL_MAIN_CONFIG $MERAN_PATH/$ID/docs/instalador/meran.conf
+ENV TPL_MAIN_CONFIG /tmp/meran.conf
 
 ENV PERL5LIB /opt/modules/Share/share/perl/5.10.1/:/opt/modules/Share/lib/perl/5.10.1/:/opt/modules/Share/share/perl/5.10/:/opt/modules/C4/Share/share/perl/5.10.1/:/opt/modules/Share/lib/perl/5.10/:/opt/modules/Share/lib/perl5/
 
+ADD files/meran.conf /tmp/
 ADD files/sphinx64.tar.gz /opt/
 ADD files/jaula64.tar.gz /opt/modules
 ADD files/apache-opac /opt/
