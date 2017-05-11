@@ -11,16 +11,20 @@ RUN apt-get update -qq && apt-get install -yqq --force-yes apt-utils \
     apache2 \
     apache2-mpm-prefork \
     libapache2-mod-perl2 \
-    libgd2-xpm\
-    libxpm4\
-    htmldoc\
-    libaspell15\
-    ntpdate\
-    libhttp-oai-perl\
-    libxml-sax-writer-perl\
-    libxml-libxslt-perl\
-    libyaml-perl\
-    mysql-client\
+    libgd2-xpm \
+    libxpm4 \
+    htmldoc \
+    libaspell15 \
+    ntpdate \
+    libhttp-oai-perl \
+    libxml-sax-writer-perl \
+    libxml-libxslt-perl \
+    libspreadsheet-xlsx-perl \
+    libspreadsheet-writeexcel-perl \
+    libspreadsheet-read-perl \
+    libspreadsheet-parseexcel-perl \
+    libyaml-perl \
+    mysql-client \
     && rm -rf /var/lib/apt/lists/*
 
 
