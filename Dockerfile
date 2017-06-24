@@ -61,4 +61,4 @@ VOLUME [ "/meran/config", "/meran/logs", "/meran/files", "/meran/apache", "/mera
 EXPOSE 80
 EXPOSE 443
 COPY entrypoint /entrypoint
-CMD  ["/entrypoint"]
+ENTRYPOINT  ["/entrypoint"]
