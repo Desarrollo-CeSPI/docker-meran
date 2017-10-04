@@ -1,0 +1,8 @@
+[Unit]
+Description=Generar indice
+
+[Timer]
+OnCalendar=Mon *-*-* 6:00
+
+[Install]
+WantedBy=default.target

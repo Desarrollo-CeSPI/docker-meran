@@ -253,6 +253,21 @@ Para enviar aviso de préstamos vencidos por mail a los usuarios se utiliza:
 docker exec -d meran  /cron/mail_prestamos_vencidos
 ```
 
+#### Correr tareas automaticamente usando systemd timers
+
+Dentro de la carpeta files/systemd-timers se encuentran todos los archivos para correr estas tareas automaticamente. Para esto es necesario copuar estos archivos a /etc/systemd/system/ y luego activar los timers con el siguiente comando:
+
+```
+systemctl enable {generar_indice,mail_recordatorio,mail_vencidos,portadas,reindexar}@<NOMBRE DEL CONTENEDOR>.timer
+systemctl start {generar_indice,mail_recordatorio,mail_vencidos,portadas,reindexar}@<NOMBRE DEL CONTENEDOR>.timer
+```
+
+Para verificar que este funcionando se puede correr el siguiente comando:
+
+```
+systemctl list-timers
+```
+
 ## Opciones al correr el contenedor
 
 El contenedor mínimamente deberá definir el puerto en el que ejecutará el

@@ -1,0 +1,8 @@
+[Unit]
+Description=Enviar email de recordatorio todas las mañanas
+
+[Timer]
+OnCalendar=Mon,Tue,Wed,Thu,Fri *-*-* 7:30:00
+
+[Install]
+WantedBy=default.target
