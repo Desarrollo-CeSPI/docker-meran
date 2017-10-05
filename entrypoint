@@ -32,7 +32,9 @@ ln -s /opt/apache-ssl /etc/apache2/sites-enabled/ssl.conf
 if [ ! -f /etc/apache2/ssl/$ID/apache.pem ]; then
   # Generando el certificado de apache
   mkdir -p /etc/apache2/ssl/$ID
-  openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout /etc/apache2/ssl/$ID/apache.pem -out /etc/apache2/ssl/$ID/apache.pem
+  openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout /etc/apache2/ssl/$ID/apache.pem \
+          -out /etc/apache2/ssl/$ID/apache.pem  -subj "/C=AR/ST=Buenos Aires/L=La Plata/O=Meran/CN=meran@unlp.edu.ar"
+  chown www-data:www-data -R /etc/apache2/ssl/main/
 fi
 
 if [ ! -L /etc/apache2/mods-enabled/ssl.load ]; then
@@ -48,10 +50,6 @@ if [ ! -L /etc/apache2/mods-enabled/headers.load ]; then
   a2enmod headers
 fi
 
-chown www-data:www-data -R /meran
-chown www-data:www-data -R $MERAN_PATH
-
-
 ### Database configuration
 TPL_BASE_DB=$MERAN_PATH/$ID/docs/instalador/base.sql
 TPL_UPDATES_DB=$MERAN_PATH/$ID/docs/instalador/updates.sql
@@ -65,6 +63,13 @@ MYSQL="mysql -u$DB_USER -h$DB_HOST --default-character-set=utf8 --batch --skip-c
 if [ ! -z "$DB_PASS" ]; then
   MYSQL="$MYSQL -p$DB_PASS"
 fi
+
+#WAIT FOR IT
+until $MYSQL; do
+  >&2 echo "MYSQL is unavailable - sleeping"
+  sleep 1
+done
+>&2 echo "MYSQL is up - starting"
 
 DBEXISTS=$($MYSQL -e "SHOW DATABASES LIKE '"$DB_NAME"';" | grep -q "$DB_NAME" ; echo "$?")
 
@@ -100,7 +105,7 @@ if [ -f $SPHINX_CONFIG ]; then
     sed -i s@reemplazarUSER@$DB_USER@g $SPHINX_CONFIG
     sed -i s@reemplazarPASS@$DB_PASS@g $SPHINX_CONFIG
     sed -i s@reemplazarHOST@$DB_HOST@g $SPHINX_CONFIG
-
+    
     /opt/sphinx/bin/indexer -c $SPHINX_CONFIG --all --rotate
 fi
 
@@ -116,4 +121,10 @@ if [ ! -d /cron ]; then
   chmod +x /cron/*
 fi
 
-/usr/sbin/apache2ctl -D FOREGROUND
+#Permisos
+chown www-data:www-data -R /meran
+chown www-data:www-data -R $MERAN_PATH
+chown www-data:www-data -R /var/log/meran/
+
+source /etc/apache2/envvars
+exec apache2 -D FOREGROUND

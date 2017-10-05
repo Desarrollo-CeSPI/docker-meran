@@ -26,9 +26,7 @@ RUN apt-get update -qq && apt-get install -yqq --force-yes apt-utils \
 RUN perl -MCPAN -e 'my $c = "CPAN::HandleConfig"; $c->load(doit => 1, autoconfig => 1); $c->edit(prerequisites_policy => "follow"); $c->edit(build_requires_install_policy => "yes"); $c->commit'
 RUN cpan -i HTML::StripTags
 
-
 RUN git clone -b 0.10.7 https://github.com/Desarrollo-CeSPI/meran.git /usr/local/share/meran/main
-
 
 # Configuracion del volumen
 ENV ID main
